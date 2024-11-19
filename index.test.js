@@ -1,22 +1,18 @@
-// install dependencies
-const { execSync } = require('child_process');
-execSync('npm install');
-execSync('npm run seed');
+const request = require("supertest");
+const app = require("./app");
 
-const request = require("supertest")
-const { db } = require('./db/connection');
-const { Musician } = require('./models/index')
-const app = require('./src/app');
-const {seedMusician} = require("./seedData");
+test("GET /musicians returns all musicians", async () => {
+  const response = await request(app).get("/musicians");
+  expect(response.statusCode).toBe(200);
 
+  const musicians = JSON.parse(response.text);
+  expect(Array.isArray(musicians)).toBe(true);
 
-describe('./musicians endpoint', () => {
-    // Write your tests here
-    
-    
+  expect(musicians[0]).toHaveProperty("id");
+  expect(musicians[0]).toHaveProperty("name");
+  expect(musicians[0]).toHaveProperty("instrument");
+  expect(musicians[0]).toHaveProperty("createdAt");
+  expect(musicians[0]).toHaveProperty("updatedAt");
 
-
-
-
-    
-})
+  expect(musicians[0].name).toBe("Mick Jagger");
+});
