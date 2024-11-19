@@ -1,5 +1,5 @@
 const request = require("supertest");
-const app = require("./app");
+const app = require("./src/app");
 
 test("GET /musicians returns all musicians", async () => {
   const response = await request(app).get("/musicians");
