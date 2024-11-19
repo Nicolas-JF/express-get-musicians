@@ -1,5 +1,5 @@
 const express = require("express");
-const { Musician } = require("./models");
+const { Musician } = require("../models");
 
 const app = express();
 const port = 3000;
