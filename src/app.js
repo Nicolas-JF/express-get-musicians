@@ -1,17 +1,22 @@
 const express = require("express");
-const { Musician } = require("../models");
-
+const { Musician } = require("./models");
 const app = express();
-const port = 3000;
 
-app.get("/musicians", async (req, res) => {
-  try {
-    const musicians = await Musician.findAll();
-    res.json(musicians);
-  } catch (error) {
-    console.error("Error fetching musicians:", error);
-    res.status(500).json({ message: "Error fetching musicians" });
-  }
+app.use(express.json());
+
+app.get("/musicians/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const musician = await Musician.findByPk(id);
+        if (musician) {
+            res.json(musician);
+        } else {
+            res.status(404).json({ message: "Musician not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving musician", error });
+    }
 });
 
 module.exports = app;
+
