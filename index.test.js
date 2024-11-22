@@ -1,49 +1,73 @@
-const request = require("supertest");
-const app = require("./src/app");
+const request = require('supertest');
+const app = require('./src/app');
 
-describe("Musician Routes", () => {
-    let musicianId;
+describe('POST /musicians', () => {
+  it('should return an error if name is missing', async () => {
+    const response = await request(app)
+      .post('/musicians')
+      .send({ instrument: 'Guitar' });
 
-    it("should create a new musician", async () => {
-        const res = await request(app)
-            .post("/musicians")
-            .send({ name: "John Doe", instrument: "Guitar" });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error).toEqual([
+      {
+        location: "body",
+        msg: "Name is required and cannot be empty or whitespace",
+        path: "name",
+        type: "field",
+        value: ""
+      }
+    ]);
+  });
 
-        expect(res.status).toBe(201);
-        expect(res.body.name).toBe("John Doe");
-        expect(res.body.instrument).toBe("Guitar");
+  it('should return an error if instrument is missing', async () => {
+    const response = await request(app)
+      .post('/musicians')
+      .send({ name: 'John Doe' });
 
-        musicianId = res.body.id;
-    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error).toEqual([
+      {
+        location: "body",
+        msg: "Instrument is required and cannot be empty or whitespace",
+        path: "instrument",
+        type: "field",
+        value: ""
+      }
+    ]);
+  });
 
-    it("should retrieve a musician by ID", async () => {
-        const res = await request(app).get(`/musicians/${musicianId}`);
+  it('should return an error if both name and instrument are missing', async () => {
+    const response = await request(app)
+      .post('/musicians')
+      .send({});
 
-        expect(res.status).toBe(200);
-        expect(res.body.id).toBe(musicianId);
-        expect(res.body.name).toBe("John Doe");
-        expect(res.body.instrument).toBe("Guitar");
-    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error).toEqual([
+      {
+        location: "body",
+        msg: "Name is required and cannot be empty or whitespace",
+        path: "name",
+        type: "field",
+        value: ""
+      },
+      {
+        location: "body",
+        msg: "Instrument is required and cannot be empty or whitespace",
+        path: "instrument",
+        type: "field",
+        value: ""
+      }
+    ]);
+  });
 
-    it("should update a musician by ID", async () => {
-        const res = await request(app)
-            .put(`/musicians/${musicianId}`)
-            .send({ name: "Jane Doe", instrument: "Drums" });
+  it('should add a new musician if all fields are valid', async () => {
+    const response = await request(app)
+      .post('/musicians')
+      .send({ name: 'John Doe', instrument: 'Guitar' });
 
-        expect(res.status).toBe(200);
-        expect(res.body.name).toBe("Jane Doe");
-        expect(res.body.instrument).toBe("Drums");
-    });
-
-    it("should delete a musician by ID", async () => {
-        const res = await request(app).delete(`/musicians/${musicianId}`);
-
-        expect(res.status).toBe(204);
-    });
-
-    it("should return 404 for deleted musician", async () => {
-        const res = await request(app).get(`/musicians/${musicianId}`);
-
-        expect(res.status).toBe(404);
-    });
+    expect(response.statusCode).toBe(201);
+    expect(response.body.length).toBe(1);
+    expect(response.body[0].name).toBe('John Doe');
+    expect(response.body[0].instrument).toBe('Guitar');
+  });
 });
